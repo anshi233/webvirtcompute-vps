@@ -2,6 +2,7 @@ set -e
 
 DISTRO_NAME=""
 DISTRO_VERSION=""
+DISTRO_FAMILY=""
 OS_RELEASE="/etc/os-release"
 TOKEN=$(echo -n $(date) | sha256sum | cut -d ' ' -f1)
 
@@ -9,17 +10,23 @@ if [[ -f $OS_RELEASE ]]; then
   source $OS_RELEASE
   if [[ $ID == "rocky" ]]; then
     DISTRO_NAME="rockylinux"
+    DISTRO_FAMILY="rhel"
   elif [[ $ID == "centos" ]]; then
     DISTRO_NAME="centos"
+    DISTRO_FAMILY="rhel"
   elif [[ $ID == "almalinux" ]]; then
     DISTRO_NAME="almalinux"
+    DISTRO_FAMILY="rhel"
+  elif [[ $ID == "debian" ]]; then
+    DISTRO_NAME="debian"
+    DISTRO_FAMILY="debian"
   fi
     DISTRO_VERSION=$(echo "$VERSION_ID" | awk -F. '{print $1}')
 fi
 
 # Check if release file is recognized
 if [[ -z $DISTRO_NAME ]]; then
-  echo -e "\nDistro is not recognized. Supported releases: Rocky Linux 8-9, CentOS 8-9, AlmaLinux 8-9.\n"
+  echo -e "\nDistro is not recognized. Supported releases: Rocky Linux 8-9, CentOS 8-9, AlmaLinux 8-9, Debian 12.\n"
   exit 1
 fi
 
@@ -37,8 +44,16 @@ fi
 
 # Install libvirt and libguestfish
 echo -e "\nInstalling libvirt and libguestfish..."
-dnf install -y epel-release
-dnf install -y tuned libvirt qemu-kvm xmlstarlet cyrus-sasl-md5 qemu-guest-agent libguestfs-tools libguestfs-rescue libguestfs-winsupport libguestfs-bash-completion
+# Select the configuration method based on distro family type
+
+if [[ $DISTRO_FAMILY == "debian" ]]; then
+  apt-get update
+  # libsasl2-modules is rhel cyrus-sasl-md5 equivalent
+  apt-get install -y libvirt-daemon-system libvirt-clients qemu-kvm libguestfs-tools xmlstarlet libsasl2-modules qemu-guest-agent libguestfs-rescue
+elif [[ $DISTRO_FAMILY == "rhel" ]]; then
+  dnf install -y epel-release
+  dnf install -y tuned libvirt qemu-kvm xmlstarlet cyrus-sasl-md5 qemu-guest-agent libguestfs-tools libguestfs-rescue libguestfs-winsupport libguestfs-bash-completion
+fi
 echo -e "Installing libvirt and libguestfish... - Done!\n"
 
 echo -e "\nConfiguring libvirt..."
