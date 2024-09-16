@@ -45,7 +45,7 @@ echo -e "\nInstalling and configuring prometheus..."
 
 if [[ $DISTRO_NAME == "debian" ]]; then
   apt-get update
-  apt-get install -y golang-github-prometheus-client-golang-dev prometheus-node-exporter
+  apt-get install -y golang-github-prometheus-client-golang-dev prometheus-node-exporter policycoreutils
 elif [[ $DISTRO_NAME == "rhel" ]]; then
   dnf install -y epel-release
   dnf install -y golang-github-prometheus golang-github-prometheus-node-exporter
