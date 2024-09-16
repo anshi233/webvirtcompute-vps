@@ -49,7 +49,7 @@ echo -e "\nInstalling libvirt and libguestfish..."
 if [[ $DISTRO_FAMILY == "debian" ]]; then
   apt-get update
   # libsasl2-modules is rhel cyrus-sasl-md5 equivalent
-  apt-get install -y libvirt-daemon-system libvirt-clients qemu-kvm libguestfs-tools xmlstarlet libsasl2-modules qemu-guest-agent libguestfs-rescue
+  apt-get install -y libvirt-daemon-system libvirt-clients qemu-kvm libguestfs-tools xmlstarlet libsasl2-modules qemu-guest-agent libguestfs-rescue tuned
 elif [[ $DISTRO_FAMILY == "rhel" ]]; then
   dnf install -y epel-release
   dnf install -y tuned libvirt qemu-kvm xmlstarlet cyrus-sasl-md5 qemu-guest-agent libguestfs-tools libguestfs-rescue libguestfs-winsupport libguestfs-bash-completion
