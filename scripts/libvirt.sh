@@ -83,9 +83,9 @@ sysctl --system
 # Enable and start libvirtd
 systemctl enable --now libvirtd-tcp.socket
 systemctl enable --now libvirt-guests
-systemctl stop libvirtd-ro.socket
-systemctl stop libvirtd.socket
-systemctl stop libvirtd.service
+systemctl restart libvirtd-ro.socket
+systemctl restart libvirtd.socket
+systemctl restart libvirtd.service
 
 # Create storage pool for images
 virsh pool-define-as images dir - - - - "/var/lib/libvirt/images"
