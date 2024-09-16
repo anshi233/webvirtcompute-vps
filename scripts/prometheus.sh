@@ -14,26 +14,43 @@ if [[ -f $OS_RELEASE ]]; then
     DISTRO_NAME="rhel"
   elif [[ $ID == "almalinux" ]]; then
     DISTRO_NAME="rhel"
+  elif [[ $ID == "debian" ]]; then
+    DISTRO_NAME="debian"
   fi
     DISTRO_VERSION=$(echo "$VERSION_ID" | awk -F. '{print $1}')
 fi
 
 # Check if release file is recognized
 if [[ -z $DISTRO_NAME ]]; then
-  echo -e "\nDistro is not recognized. Supported releases: Rocky Linux 8-9, CentOS 8-9, AlmaLinux 8-9.\n"
+  echo -e "\nDistro is not recognized. Supported releases: Rocky Linux 8-9, CentOS 8-9, AlmaLinux 8-9, Debian 12.\n"
   exit 1
 fi
 
-# Check if libvirt is installed
-if ! dnf list installed libvirt > /dev/null 2>&1; then
-  echo -e "\nPackage libvirt is not installed. Please install and configure libvirt first!\n"
-  exit 1
+if [[ $DISTRO_NAME == "debian" ]]; then
+  # Check if prometheus is installed
+  if ! dpkg -l | grep -q prometheus; then
+    echo -e "\nPackage prometheus is not installed. Please install and configure prometheus first!\n"
+    exit 1
+  fi
+elif [[ $DISTRO_NAME == "rhel" ]]; then
+  # Check if prometheus is installed
+  if ! dnf list installed prometheus > /dev/null 2>&1; then
+    echo -e "\nPackage prometheus is not installed. Please install and configure prometheus first!\n"
+    exit 1
+  fi
 fi
 
 # Install prometheus
 echo -e "\nInstalling and configuring prometheus..."
-dnf install -y epel-release
-dnf install -y golang-github-prometheus golang-github-prometheus-node-exporter
+
+if [[ $DISTRO_NAME == "debian" ]]; then
+  apt-get update
+  apt-get install -y golang-github-prometheus-client-golang-dev prometheus-node-exporter
+elif [[ $DISTRO_NAME == "rhel" ]]; then
+  dnf install -y epel-release
+  dnf install -y golang-github-prometheus golang-github-prometheus-node-exporter
+fi
+
 wget -O /tmp/prometheus-libvirt-exporter.tar.gz https://cloud-apps.webvirt.cloud/prometheus-libvirt-exporter-$DISTRO_NAME$DISTRO_VERSION-amd64.tar.gz
 tar -xvf /tmp/prometheus-libvirt-exporter.tar.gz -C /tmp
 cp /tmp/prometheus-libvirt-exporter/prometheus-libvirt-exporter /usr/local/bin/
